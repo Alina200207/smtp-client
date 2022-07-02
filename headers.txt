@@ -1,0 +1,4 @@
+From: name <email>
+To: name <email>
+Subject: sxomething
+MIME-Version: 1.0
