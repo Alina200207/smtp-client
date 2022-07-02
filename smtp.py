@@ -46,7 +46,7 @@ def main():
             msg += file.read()
         msg += '\n'
         tab = '\t'
-        bound = "--=-boundar-9879.net"
+        bound = "--=-boundar-9879"
         msg += 'Content-Type: multipart/mixed;\n' + tab + f"boundary=\"{bound}\""
         msg += '\n\n\n'
         msg += f'--{bound}\n'
