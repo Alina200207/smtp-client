@@ -77,7 +77,7 @@ def main():
                 subtype = "octet-stream"
             else:
                 continue
-            if subtype == "jpg":
+            if subtype == "jpg" or subtype == "png":
                 subtype = "jpeg"
             msg += f"--{bound}\n"
             msg += "Content-Disposition: attachment;\n" + tab + f'filename=\"{f.name}\"\n'
