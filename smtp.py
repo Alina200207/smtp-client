@@ -10,6 +10,7 @@ pattern_type_image = re.compile(r'\w*?\.(gif|png|jpg)')
 pattern_type_audio = re.compile(r'\w*?\.(mp3|flac|wav)')
 pattern_type_video = re.compile(r'\w*?\.(avi|mp4|mpg|mov)')
 pattern_type_application = re.compile(r'\w*?\..*')
+pattern_recipient = re.compile(r'To:.*?<(.*?@[a-z\.]*?)>', re.DOTALL)
 pattern_error = re.compile(r'.*?Error: ', re.VERBOSE)
 
 def request(socket, request):
@@ -33,6 +34,14 @@ def main():
         client = ssl.wrap_socket(client)
         print(client.recv(1024))
         print(request(client, 'ehlo {user_name}'))
+        headers = ''
+        with open('headers.txt', 'r') as file:
+            headers += file.read()
+        getter = re.search(pattern_recipient, headers)
+        if not getter:
+            print("Неправильный адрес получателя")
+            sys.exit()
+        recipient = getter.group(1)
         base64login = base64.b64encode(user_name.encode()).decode()
         base64password = base64.b64encode(password.encode()).decode()
         print(request(client, 'AUTH LOGIN'))
@@ -42,11 +51,9 @@ def main():
             print("Введен неправильный логин пользователя или пароль")
             sys.exit()
         print(request(client, f'MAIL FROM:{user_name}'))
-        print(request(client, f"RCPT TO:{user_name}"))
+        print(request(client, f"RCPT TO:{recipient}"))
         print(request(client, 'DATA'))
-        msg = ''
-        with open('headers.txt', 'r') as file:
-            msg += file.read()
+        msg = headers
         msg += '\n'
         tab = '\t'
         bound = "--=-boundar-9879"
@@ -71,7 +78,7 @@ def main():
                 subtype = find_audio.group(1)
             elif find_video:
                 general_type = "video"
-                subtype = "mpeg"
+                subtype = find_video.group(1)
             elif find_application:
                 general_type = "application"
                 subtype = "octet-stream"
@@ -88,7 +95,6 @@ def main():
                 msg += base64.b64encode(fil.read()).decode()
             msg += '\n'
         msg += f'--{bound}--\n.'
-        print(msg)
         print(request(client, msg))
 
 
