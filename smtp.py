@@ -71,7 +71,7 @@ def main():
                 subtype = find_audio.group(1)
             elif find_video:
                 general_type = "video"
-                subtype = find_video.group(1)
+                subtype = "mpeg"
             elif find_application:
                 general_type = "application"
                 subtype = "octet-stream"
