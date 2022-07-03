@@ -6,7 +6,10 @@ import base64
 import sys
 from getpass import getpass
 
-pattern_type = re.compile(r'\w*?\.(gif|png|jpg)')
+pattern_type_image = re.compile(r'\w*?\.(gif|png|jpg)')
+pattern_type_audio = re.compile(r'\w*?\.(mp3|flac|wav)')
+pattern_type_video = re.compile(r'\w*?\.(avi|mp4|mpg|mov)')
+pattern_type_application = re.compile(r'\w*?\..*')
 pattern_error = re.compile(r'.*?Error: ', re.VERBOSE)
 
 def request(socket, request):
@@ -54,21 +57,38 @@ def main():
         with open('msg.txt') as file:
             msg += file.read() + '\n'
         for f in pathlib.Path("attachments").iterdir():
-            reg = re.search(pattern_type, f.name)
-            if not reg:
+            general_type = ''
+            subtype = ''
+            find_image = re.search(pattern_type_image, f.name)
+            find_audio = re.search(pattern_type_audio, f.name)
+            find_video = re.search(pattern_type_video, f.name)
+            find_application = re.search(pattern_type_application, f.name)
+            if find_image:
+                general_type = "image"
+                subtype = find_image.group(1)
+            elif find_audio:
+                general_type = "audio"
+                subtype = find_audio.group(1)
+            elif find_video:
+                general_type = "video"
+                subtype = find_video.group(1)
+            elif find_application:
+                general_type = "application"
+                subtype = "octet-stream"
+            else:
                 continue
-            type_im = reg.group(1)
-            if type_im == "jpg":
-                type_im = "jpeg"
+            if subtype == "jpg":
+                subtype = "jpeg"
             msg += f"--{bound}\n"
             msg += "Content-Disposition: attachment;\n" + tab + f'filename=\"{f.name}\"\n'
-            msg += f"Content-Transfer-Encoding: base64\nContent-Type: image/{type_im};\n" + tab
+            msg += f"Content-Transfer-Encoding: base64\nContent-Type: {general_type}/{subtype};\n" + tab
             msg += f"name=\"{f.name}\""
             msg += "\n\n"
             with f.open('rb') as fil:
                 msg += base64.b64encode(fil.read()).decode()
             msg += '\n'
         msg += f'--{bound}--\n.'
+        print(msg)
         print(request(client, msg))
 
 
